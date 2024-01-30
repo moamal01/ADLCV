@@ -102,11 +102,11 @@ class PositionalEncoding(nn.Module):
         # get half of the embedding indices
         div_term = torch.arange(0., embed_dim, 2)
         # miltiply each position with -(math.log(10000.0) / embed_dim)
-        div_term = ...
+        div_term = div_term * -(math.log(10000.0) / embed_dim)
         # compute the exp of div_term
-        div_term = ...
-        pe[:, ...] = ... # HINT use torch.sin to assign to the even-positions the position * div_term
-        pe[:, ...] = ... # HINT use torch.cos to assign to the odd-positions the position * div_term
+        div_term = torch.exp(div_term)
+        pe[:, ::2] = torch.sin(position*div_term) # HINT use torch.sin to assign to the even-positions the position * div_term
+        pe[:, 1::2] = torch.cos(position*div_term) # HINT use torch.cos to assign to the odd-positions the position * div_term
 
         pe = pe.unsqueeze(0)
         self.register_buffer('pe', pe)
