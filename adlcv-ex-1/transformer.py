@@ -38,22 +38,22 @@ class Attention(nn.Module):
         Now you have to split the projected keys, queries, and values to multiple heads.
         """
         # First split the embed_dim to num_heads x head_dim
-        keys = ...
+        keys = rearrange(keys, 'b s (n h) -> b s n h', n = self.num_heads, h = self.head_dim)
         # Secondly merge the batch_size with the num_heads
-        keys = ...
+        keys = rearrange(keys, 'b s n h -> (b n) s h')
         
         # HINT repeat the same process for queries and values
-        queries = ...
-        queries = ...
+        queries = rearrange(queries, 'b s (n h) -> b s n h', n = self.num_heads, h = self.head_dim)
+        queries = rearrange(queries, 'b s n h -> (b n) s h')
 
-        values = ...
-        values = ...
+        values = rearrange(values, 'b s (n h) -> b s n h', n = self.num_heads, h = self.head_dim)
+        values = rearrange(values, 'b s n h -> (b n) s h')
 
         # Compute attetion logits
-        attention_logits = ... # multiply queries and keys
+        attention_logits = queries @ keys.transpose(1, 2) # multiply queries and keys
         attention_logits = attention_logits * self.scale
-        attention = ... # softmax on attention
-        out = ... # multiply attention with values
+        attention = F.softmax(attention_logits) # softmax on attention
+        out = attention @ values # multiply attention with values
 
         # Rearragne output
         # from (batch_size x num_head) x seq_length x head_dim to batch_size x seq_length x embed_dim
