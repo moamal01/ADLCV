@@ -125,6 +125,10 @@ def main(image_size=(32,32), patch_size=(4,4), channels=3,
             if val_loss <= best_val_loss:
                 torch.save(model.state_dict(), 'model.pth')
                 best_val_loss = val_loss
+    # get cwd
+    cwd = os.getcwd()
+    print(f"Model saved to {cwd}/model.pth")
+    torch.save(model, os.path.join(cwd, 'model.pth'))
 
 
 if __name__ == "__main__":
