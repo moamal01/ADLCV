@@ -38,22 +38,23 @@ class Attention(nn.Module):
         Now you have to split the projected keys, queries, and values to multiple heads.
         """
         # First split the embed_dim to num_heads x head_dim
-        keys = ...
-        # Secondly merge the batch_size with the num_heads
-        keys = ...
+        keys = rearrange(keys, 'b l (h1 h2) -> b l h1 h2',h1 = self.num_heads, h2=self.head_dim)
+
+        # Secondly merge the batch_size with the num_heads (h1)
+        keys = rearrange(keys, 'b l h1 h2 -> (b h1) l h2')
         
         # HINT repeat the same process for queries and values
-        queries = ...
-        queries = ...
+        queries = rearrange(queries, 'b l (h1 h2) -> b l h1 h2',h1 = self.num_heads, h2=self.head_dim)
+        queries = rearrange(queries, 'b l h1 h2 -> (b h1) l h2')
 
-        values = ...
-        values = ...
+        values = rearrange(values, 'b l (h1 h2) -> b l h1 h2',h1 = self.num_heads, h2=self.head_dim)
+        values = rearrange(values, 'b l h1 h2 -> (b h1) l h2')
 
         # Compute attetion logits
-        attention_logits = ... # multiply queries and keys
+        attention_logits = queries @ keys.transpose(1,2) # multiply queries and keys
         attention_logits = attention_logits * self.scale
-        attention = ... # softmax on attention
-        out = ... # multiply attention with values
+        attention = torch.nn.functional.softmax(attention_logits, dim=-1) # softmax on attention
+        out = attention @ values # multiply attention with values
 
         # Rearragne output
         # from (batch_size x num_head) x seq_length x head_dim to batch_size x seq_length x embed_dim
@@ -102,11 +103,11 @@ class PositionalEncoding(nn.Module):
         # get half of the embedding indices
         div_term = torch.arange(0., embed_dim, 2)
         # miltiply each position with -(math.log(10000.0) / embed_dim)
-        div_term = ...
+        div_term = -(math.log(10000.0) / embed_dim) * div_term
         # compute the exp of div_term
-        div_term = ...
-        pe[:, ...] = ... # HINT use torch.sin to assign to the even-positions the position * div_term
-        pe[:, ...] = ... # HINT use torch.cos to assign to the odd-positions the position * div_term
+        div_term = torch.exp(div_term)
+        pe[:, ::2] = torch.sin(position * div_term) # HINT use torch.sin to assign to the even-positions the position * div_term
+        pe[:, 1::2] = torch.cos(position * div_term) # HINT use torch.cos to assign to the odd-positions the position * div_term
 
         pe = pe.unsqueeze(0)
         self.register_buffer('pe', pe)
