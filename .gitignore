@@ -1,0 +1,24 @@
+# Environments
+.env
+adlcv-ex-3/ddpm_env/
+
+# Data
+data/
+adlcv-ex-2/data/
+adlcv-ex-3/data/
+
+
+# logs
+adlcv-ex-2/ouputs/
+
+
+# Models
+adlcv-ex-2/models/
+adlcv-ex-3/models/
+
+
+# Assets
+adlcv-ex-3/assets/
+
+# pycache
+__pycache__/
