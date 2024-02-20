@@ -51,7 +51,7 @@ class Diffusion:
         
         noise = torch.randn_like(x) # HINT: sample noise from a normal distribution. It should match the shape of x 
         assert noise.shape == x.shape, 'Invalid shape of noise'
-       
+        
         x_noised = sqrt_alpha_bar * x + sqrt_one_minus_alpha_bar * noise # HINT: Create the noisy version of x. See Eq. 4 in the ddpm paper at page 2
         return x_noised, noise
     
@@ -66,7 +66,7 @@ class Diffusion:
 
         # TASK 3 : Implement the revese process
         predicted_noise = model(x_t, t) # HINT: use model to predict noise
-        mean = (x_t - beta/(1 - alpha_bar).sqrt() * predicted_noise) / alpha.sqrt() # HINT: calculate the mean of the distribution p(x_{t-1} | x_t). See Eq. 11 in the ddpm paper at page 4
+        mean = (x_t - beta / torch.sqrt(1- alpha_bar) * predicted_noise) / torch.sqrt(alpha) # HINT: calculate the mean of the distribution p(x_{t-1} | x_t). See Eq. 11 in the ddpm paper at page 4
         std = torch.sqrt(beta)
 
         return mean, std
@@ -80,9 +80,9 @@ class Diffusion:
         
         # HINT: Having calculate the mean and std of p(x{x_t} | x_t), we sample noise from a normal distribution.
         # see line 3 of the Algorithm 2 (Sampling) at page 4 of the ddpm paper.
-        noise = torch.randn_like(x_t).to(self.device) if t > 0 else torch.ones_like(x_t).to(self.device)
+        noise = torch.randn_like(x_t).to(self.device) if (t > 0).any() else torch.zeros_like(x_t).to(self.device)
 
-        x_t_prev = mean + std * noise  # Calculate x_{t-1}, see line 4 of the Algorithm 2 (Sampling) at page 4 of the ddpm paper.
+        x_t_prev = mean + std * noise # Calculate x_{t-1}, see line 4 of the Algorithm 2 (Sampling) at page 4 of the ddpm paper.
         return x_t_prev
 
 
