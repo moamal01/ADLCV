@@ -65,21 +65,6 @@ if __name__ == '__main__':
     ########################################## Per Timestep Accuracy ##########################################
     _, val_loader, _ = prepare_dataloaders(100, val_batch_size=1)
     per_t_acc = torch.zeros_like(t, dtype=torch.float32)
-    for img, label in tqdm(val_loader, desc='Eval'):
-        img = img.to(device)
-        label = label.to(device)
-        label = repeat(label, '1 -> (b 1)', b=t.shape[0])
-        x_t, noise = diffusion.q_sample(img, t)
-
-        with torch.no_grad():
-            logits = model(x_t, t)
-
-        out = softmax(logits)
-        prediction = torch.argmax(out, dim=-1)
-        
-        assert prediction.shape == label.shape
-        per_t_acc += prediction == label
-        
     per_t_acc /= len(val_loader)
 
     plt.figure()

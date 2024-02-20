@@ -83,13 +83,13 @@ def train(T=500, cfg=True, img_size=16, input_channels=3, channels=32,
             # Train a diffusion model with classifier-free guidance
             # Do not forget randomly discard labels
             p_uncod = 0.1
+            b = torch.randint(high=1)
+            labels = labels if b > p_uncod else None
 
-            ...
-
-            t = ...
-            x_t, noise = ...
-            predicted_noise = ...
-            loss = ...
+            t = diffusion.sample_timesteps(images.shape[0]).to(device)
+            x_t, noise = diffusion.q_sample()
+            predicted_noise = model(x_t, t)
+            loss = mse(predicted_noise, noise)
 
             optimizer.zero_grad()
             loss.backward()

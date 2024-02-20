@@ -140,18 +140,21 @@ class UNet(nn.Module):
         if num_classes is not None:
             # Project one-hot encoded labels to the time embedding dimension 
             # Implement it as a 2-layer MLP with a GELU activation in-between
-            # self.label_emb = ...
-            pass
+            self.label_emb = torch.nn.Sequential(
+                nn.Linear(num_classes, time_dim),
+                nn.GELU(),
+                nn.Linear(time_dim, time_dim)
+            )
             
 
     def forward(self, x, t, y=None):
-
         t = t.unsqueeze(-1).type(torch.float)
         t = pos_encoding(t, self.time_dim, self.device)
 
         if y is not None:
-            # Add label and time embeddings together
-            pass
+            # Add the label embedding to positional embedding
+            y = self.label_emb(y)
+            t = y + t
             
         x1 = self.inc(x)
         x2 = self.down1(x1, t)
@@ -176,7 +179,38 @@ class UNet(nn.Module):
 class Classifier(nn.Module):
     def __init__(self, img_size=16, c_in=3, labels=5, time_dim=256, device="cuda", channels=32):
         super().__init__()
-        pass
+        self.device = device
+        self.time_dim = time_dim
+
+        # Simple classifier from the UNet encoder
+        self.inc = DoubleConv(c_in, channels)
+        self.down1 = Down(channels, channels*2,  emb_dim=time_dim)
+        self.sa1 = SelfAttention(channels*2, img_size//2)
+        self.down2 = Down(channels*2, channels*4, emb_dim=time_dim)
+        self.sa2 = SelfAttention(channels*4, img_size // 4)
+
+
+        #self.down3 = Down(channels*4, channels*4,  emb_dim=time_dim)
+        #self.sa3 = SelfAttention(channels*4, img_size //
+        self.bot1 = DoubleConv(channels*4, channels*8)
+
+        self.fc = nn.Sequential(
+            nn.Linear(channels*8, labels),
+        )
 
     def forward(self, x, t):
-        return
+        t = t.unsqueeze(-1).type(torch.float)
+        t = pos_encoding(t, self.time_dim, self.device)
+
+        x0 = self.inc(x)
+        x1 = self.down1(x0, t)
+        x1 = self.sa1(x1)
+
+        x2 = self.down2(x1, t)
+        x2 = self.sa2(x2)
+
+        x4 = self.bot1(x2)
+        x4 = torch.mean(x4, dim=(2, 3))
+        output = self.fc(x4)
+
+        return output
