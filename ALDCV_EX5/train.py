@@ -69,6 +69,8 @@ def main(scene_name):
     optimizer = torch.optim.Adam(model_params, lr=float(para['lr']))
     print(f'Trainable parameters: {total_params/1_000_000:.2f}M')
     
+    loss_func = torch.nn.MSELoss()
+
     #### Training loop
     logger = SummaryWriter(os.path.join('runs', para['expname']))
     videos_path = os.path.join('rendered_videos', para['expname'])
@@ -108,10 +110,10 @@ def main(scene_name):
 
         rgb_predicted = outputs['rgb_map']
         # TASK 5: training loop
-        loss = ... #HINT: MSE betweein rgb_predicted and target_img 
-        ... #HINT: zero gradient
-        ... #HINT: loss backward
-        ... #HINT optimizer step
+        loss = loss_func(rgb_predicted, target_img) #HINT: MSE betweein rgb_predicted and target_img 
+        optimizer.zero_grad() #HINT: zero gradient
+        loss.backward() #HINT: loss backward
+        optimizer.step() #HINT optimizer step
 
         psnr = -10. * torch.log10(loss)
         pbar.set_postfix(MSE=loss.item(), PSNR=psnr.item())
