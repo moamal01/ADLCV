@@ -1,5 +1,5 @@
 expname: lego
-datadir: ./data/nerf_synthetic/lego
+datadir: ./data/lego # Changed from ./data/nerf_synthetic/lego
 target_size: 50       # image resolution
 
 # Embedders
