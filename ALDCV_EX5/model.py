@@ -47,19 +47,20 @@ class NeRF(nn.Module):
             h = l(h) # HINT: feed h to the layer i and rewrite to h
             h = F.relu(h) # HINT: use relu
             if i in self.skips:
-                h = torch.cat([h,input_pts],-1) # implement skip with torch.cat
+                print(h.shape, input_pts.shape)
+                h = torch.cat((input_pts,h), 1) # implement skip with torch.cat
 
         if self.d_viewdirs is not None:
             alpha = self.alpha_linear(h) # HINT: feed h to alpha linear
             feature = F.relu(h) # HINT: feed h to feature linear
-            h = torch.cat([feature,input_views], -1) # HINT: concat feature and input_views to create the input for the views_linreas
+            h = torch.cat((feature,input_views), 1) # HINT: concat feature and input_views to create the input for the views_linreas
         
             for i, l in enumerate(self.views_linears):
                 h = l(h) # HINT: forward for views_linears of i
                 h = F.relu(h) # HINT: Use relu
 
             rgb = self.rgb_linear(h) # HINT: calculate rgb values with rgb_layer
-            outputs = torch.cat([rgb, alpha], - 1) # HINT: concat rgb and alpha
+            outputs = torch.cat((rgb, alpha), 1) # HINT: concat rgb and alpha
         else:
             outputs = self.output_linear(h)
 
