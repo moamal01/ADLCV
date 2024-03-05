@@ -6,7 +6,7 @@ import numpy as np
 
 
 class NeRF(nn.Module):
-    def __init__(self,  d_input=3, n_layers=8, hidden_dim=256, skips=[4], d_viewdirs=None):
+    def __init__(self, d_input=3, n_layers=8, hidden_dim=256, skips=[4], d_viewdirs=None):
         """ 
         """
         super(NeRF, self).__init__()
@@ -44,27 +44,26 @@ class NeRF(nn.Module):
         h = input_pts
         # for each layer with index i
         for i, l in enumerate(self.pts_linears):
-            h = ... # HINT: feed h to the layer i and rewrite to h
-            h = ... # HINT: use relu
+            h = l(h)  # HINT: feed h to the layer i and rewrite to h
+            h = F.relu(h)  # HINT: use relu
             if i in self.skips:
-                h = ... # implement skip with torch.cat
+                h = torch.cat([h, input_pts], dim=-1)  # implement skip with torch.cat
 
         if self.d_viewdirs is not None:
-            alpha = ... # HINT: feed h to alpha linear
-            feature = ... # HINT: feed h to feature linear
-            h = ... # HINT: concat feature and input_views to create the input for the views_linreas
+            alpha = self.alpha_linear(h)  # HINT: feed h to alpha linear
+            feature = self.feature_linear(h)  # HINT: feed h to feature linear
+            h = torch.cat([feature, input_views], dim=-1)  # HINT: concat feature and input_views to create the input for the views_linears
         
             for i, l in enumerate(self.views_linears):
-                h = ... # HINT: forward for views_linears of i
-                h = ... # HINT: Use relu
+                h = l(h)  # HINT: forward for views_linears of i
+                h = F.relu(h)  # HINT: Use relu
 
-            rgb = ... # HINT: calculate rgb values with rgb_layer
-            outputs = ... # HINT: concat rgb and alpha
+            rgb = self.rgb_linear(h)  # HINT: calculate rgb values with rgb_layer
+            outputs = torch.cat([rgb, alpha], dim=-1)  # HINT: concat rgb and alpha
         else:
             outputs = self.output_linear(h)
 
         return outputs    
-
 
 
 class Embedder(nn.Module):
@@ -87,8 +86,8 @@ class Embedder(nn.Module):
 
         # TASK 2: Complete the implementation of the Embedder
         for freq in freq_bands:
-            self.embed_fns.append(lambda x, freq=freq: ...) # HINT: use torch.sin
-            self.embed_fns.append(lambda x, freq=freq: ...) # HINT: use torch.cos
+            self.embed_fns.append(lambda x, freq=freq: torch.sin(freq * x))
+            self.embed_fns.append(lambda x, freq=freq: torch.cos(freq * x))
 
     def forward(self, x):
         """

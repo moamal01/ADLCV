@@ -147,7 +147,7 @@ print('Input Points', pts.shape) # h*w x n_samples x 3
 print('Distances Along Ray', distances.shape)
 
 pts_noperturb, distances_noperturb = sample_stratified(rays_o, rays_d, near, far, n_samples, perturb=False)
-
+points = pts
 y_vals = torch.zeros_like(distances)
 plt.figure()
 plt.plot(distances_noperturb[0].cpu().numpy(), 1 + y_vals[0].cpu().numpy(), 'b-o', label='No perturbation')

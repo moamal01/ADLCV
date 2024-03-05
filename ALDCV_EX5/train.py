@@ -11,6 +11,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 # custom imports
 from model import NeRF, Embedder
+import torch.nn.functional as F
 
 from nerf_helpers import get_rays, nerf_forward, crop_center, render_video
 from load_blender import load_blender_data
@@ -107,16 +108,21 @@ def main(scene_name):
         )
 
         rgb_predicted = outputs['rgb_map']
+
         # TASK 5: training loop
-        loss = ... #HINT: MSE betweein rgb_predicted and target_img 
-        ... #HINT: zero gradient
-        ... #HINT: loss backward
-        ... #HINT optimizer step
+        loss = F.mse_loss(rgb_predicted, target_img)  # MSE between rgb_predicted and target_img 
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
         psnr = -10. * torch.log10(loss)
         pbar.set_postfix(MSE=loss.item(), PSNR=psnr.item())
         logger.add_scalar("MSE", loss.item(), global_step=i)
         logger.add_scalar("PSNR", psnr.item(), global_step=i)
+
+
+        # TASK 5: training loop
+
 
         if psnr.item() >= best_psnr:
             best_psnr = psnr.item()
