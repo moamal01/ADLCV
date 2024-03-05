@@ -89,9 +89,9 @@ for epoch in tqdm(range(NUM_EPOCHS), desc=f'Training for conf {conf}'):
     total_train_loss = 0
     for f1, f2, f3 in train_loader:
         # TASK 2: Implement the training loop
-        ...
+        output = model(f1, f3)
 
-        batch_loss = loss_fn(..., ...)
+        batch_loss = loss_fn(output, f2)
         optimizer.zero_grad()
         batch_loss.backward()
         optimizer.step()
