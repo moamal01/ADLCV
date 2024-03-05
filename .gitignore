@@ -23,5 +23,7 @@ adlcv-ex-3/assets/
 # pycache
 __pycache__/
 
+*.pth
+
 # Other
 .DS_Store
